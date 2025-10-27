@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'home' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Volver al inicio
+    </a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0 d-inline">
+                        <i class="fas fa-table me-2"></i>
+                        Detalles de la Subpartida
+                    </h4>
+                    {% if subpartida.vigente %}
+                        <span class="badge bg-success ms-3">Vigente</span>
+                    {% else %}
+                        <span class="badge bg-danger ms-3">No vigente / Sin información</span>
+                    {% endif %}
+                </div>
+                <a href="{% url 'arancel:partida_detail' subpartida.partida.id %}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-list-ol me-1"></i> Ver Partida
+                </a>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">ID:</dt>
+                    <dd class="col-sm-8">{{ subpartida.id }}</dd>
+                    <dt class="col-sm-4">Código:</dt>
+                    <dd class="col-sm-8">{{ subpartida.codigo|replace_none }}</dd>
+                    <dt class="col-sm-4">Descripción:</dt>
+                    <dd class="col-sm-8">{{ subpartida.descripcion|replace_none }}</dd>
+                    <dt class="col-sm-4">GA (%):</dt>
+                    <dd class="col-sm-8">{{ subpartida.ga|replace_none }}</dd>
+                    <dt class="col-sm-4">ICE (%):</dt>
+                    <dd class="col-sm-8">{{ subpartida.ice|replace_none }}</dd>
+                    <dt class="col-sm-4">IEHD (%):</dt>
+                    <dd class="col-sm-8">{{ subpartida.iehd|replace_none }}</dd>
+                    <dt class="col-sm-4">Unidad de Medida:</dt>
+                    <dd class="col-sm-8">{{ subpartida.unidad_medida|replace_none }}</dd>
+                    <dt class="col-sm-4">Despacho en Frontera:</dt>
+                    <dd class="col-sm-8">{{ subpartida.despacho_en_frontera|replace_none }}</dd>
+                    <dt class="col-sm-4">Tipo de Doc:</dt>
+                    <dd class="col-sm-8">{{ subpartida.tipo_de_doc|replace_none }}</dd>
+                    <dt class="col-sm-4">Entidad que Emite:</dt>
+                    <dd class="col-sm-8">{{ subpartida.entidad_que_emite|replace_none }}</dd>
+                    <dt class="col-sm-4">Disposición Legal:</dt>
+                    <dd class="col-sm-8">{{ subpartida.disposicion_legal|replace_none }}</dd>
+                    <dt class="col-sm-4">CAN ACE 36/47 VEN:</dt>
+                    <dd class="col-sm-8">{{ subpartida.can_ace_36_47_ven|replace_none }}</dd>
+                    <dt class="col-sm-4">ACE 22 Chile:</dt>
+                    <dd class="col-sm-8">{{ subpartida.ace_22_chile|replace_none }}</dd>
+                    <dt class="col-sm-4">ACE 22 Prot:</dt>
+                    <dd class="col-sm-8">{{ subpartida.ace_22_prot|replace_none }}</dd>
+                    <dt class="col-sm-4">ACE 66 México:</dt>
+                    <dd class="col-sm-8">{{ subpartida.ace_66_mexico|replace_none }}</dd>
+                </dl>
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'arancel:partida_detail' subpartida.partida.id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Volver a la Partida
+                    </a>
+                    {% if not subpartida.vigente %}
+                    <div class="text-end">
+                        <small class="text-muted">Si necesitas alternativas similares, prueba la búsqueda:</small>
+                        <a href="{% url 'arancel:resultados_busqueda' %}?q={{ subpartida.codigo }}" class="btn btn-outline-warning btn-sm ms-2">Buscar códigos similares</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

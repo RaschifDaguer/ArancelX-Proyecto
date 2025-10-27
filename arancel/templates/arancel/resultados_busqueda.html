@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'home' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Volver al inicio
+    </a>
+</div>
+<div class="container">
+    <h3 class="mb-4">Resultados de búsqueda para: <strong>"{{ query }}"</strong></h3>
+    {% if subpartidas or partidas %}
+        {% if subpartidas %}
+        <h5>Subpartidas encontradas:</h5>
+        <ul class="list-group mb-4">
+            {% for subpartida in subpartidas %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-info me-2"><i class="fas fa-table me-1"></i>Subpartida</span>
+                        <strong>{{ subpartida.codigo|replace_none }}</strong> - {{ subpartida.descripcion|replace_none|truncatechars:60 }}
+                        <br>
+                        <small class="text-muted">Partida: <strong>{{ subpartida.partida.codigo }}</strong> - {{ subpartida.partida.descripcion|replace_none }}</small>
+                    </div>
+                    {% if subpartida.codigo|is_descriptive_code %}
+                        <a href="{% url 'arancel:partida_detail' subpartida.partida.id %}?highlight={{ subpartida.id }}" class="btn btn-outline-primary btn-sm">Ver en lista</a>
+                    {% else %}
+                        <a href="{% url 'arancel:subpartida_detail' subpartida.id %}" class="btn btn-outline-primary btn-sm">Ver detalle</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if partidas %}
+        <h5>Partidas encontradas:</h5>
+        <ul class="list-group mb-4">
+            {% for partida in partidas %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-warning me-2"><i class="fas fa-list-ol me-1"></i>Partida</span>
+                        <strong>{{ partida.codigo }}</strong> - {{ partida.descripcion|replace_none|truncatechars:60 }}
+                    </div>
+                    <a href="{% url 'arancel:partida_detail' partida.id %}" class="btn btn-outline-primary btn-sm">Ver detalle</a>
+                </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-warning">No se encontraron resultados para tu búsqueda.</div>
+    {% endif %}
+</div>
+{% endblock %} 
