@@ -3,6 +3,18 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User 
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
+from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.utils import timezone
+import openpyxl
+from openpyxl.styles import Font
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+from .forms import HistorialBusquedaFilterForm
 from django.contrib.auth.forms import UserCreationForm
 from arancel.models import Seccion, Capitulo, Partida, Subpartida
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -37,7 +49,7 @@ def limpiar_historial(request):
     if request.method == 'POST':
         HistorialBusqueda.objects.filter(usuario=request.user).delete()
         messages.success(request, 'Historial de búsquedas limpiado correctamente.')
-    return redirect('home')
+    return redirect('central:home')
 
 @login_required
 @user_passes_test(es_superusuario_o_tiene_permiso_usuarios)
@@ -237,3 +249,128 @@ def admin_redirect(request):
         # Usuarios sin permisos van al home
         messages.warning(request, 'No tienes permisos para acceder al panel de administración.')
         return redirect('home')    
+
+class HistorialBusquedaListView(LoginRequiredMixin, ListView):
+    model = HistorialBusqueda
+    template_name = 'central/historial_busquedas.html'
+    context_object_name = 'historial'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = HistorialBusqueda.objects.all()
+        form = HistorialBusquedaFilterForm(self.request.GET)
+        
+        if form.is_valid():
+            if form.cleaned_data['fecha_inicio']:
+                queryset = queryset.filter(fecha_busqueda__date__gte=form.cleaned_data['fecha_inicio'])
+            if form.cleaned_data['fecha_fin']:
+                queryset = queryset.filter(fecha_busqueda__date__lte=form.cleaned_data['fecha_fin'])
+            if form.cleaned_data['tipo_resultado']:
+                queryset = queryset.filter(tipo_resultado=form.cleaned_data['tipo_resultado'])
+            if form.cleaned_data['palabra_clave']:
+                queryset = queryset.filter(
+                    Q(termino_busqueda__icontains=form.cleaned_data['palabra_clave']) |
+                    Q(usuario__username__icontains=form.cleaned_data['palabra_clave'])
+                )
+        
+        return queryset.select_related('usuario')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = HistorialBusquedaFilterForm(self.request.GET)
+        return context
+
+def exportar_historial(request):
+    # Obtener los datos filtrados
+    queryset = HistorialBusqueda.objects.all()
+    form = HistorialBusquedaFilterForm(request.GET)
+    
+    if form.is_valid():
+        if form.cleaned_data['fecha_inicio']:
+            queryset = queryset.filter(fecha_busqueda__date__gte=form.cleaned_data['fecha_inicio'])
+        if form.cleaned_data['fecha_fin']:
+            queryset = queryset.filter(fecha_busqueda__date__lte=form.cleaned_data['fecha_fin'])
+        if form.cleaned_data['tipo_resultado']:
+            queryset = queryset.filter(tipo_resultado=form.cleaned_data['tipo_resultado'])
+        if form.cleaned_data['palabra_clave']:
+            queryset = queryset.filter(
+                Q(termino_busqueda__icontains=form.cleaned_data['palabra_clave']) |
+                Q(usuario__username__icontains=form.cleaned_data['palabra_clave'])
+            )
+
+    format_type = request.GET.get('format', 'pdf')
+
+    if format_type == 'excel':
+        # Crear un nuevo libro de Excel
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Historial de Búsquedas"
+
+        # Agregar encabezados
+        headers = ['Usuario', 'Término de búsqueda', 'Tipo de resultado', 'Fecha y hora']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col)
+            cell.value = header
+            cell.font = Font(bold=True)
+
+        # Agregar datos
+        for row, registro in enumerate(queryset, 2):
+            ws.cell(row=row, column=1).value = registro.usuario.username
+            ws.cell(row=row, column=2).value = registro.termino_busqueda
+            ws.cell(row=row, column=3).value = registro.tipo_resultado or '--'
+            ws.cell(row=row, column=4).value = registro.fecha_busqueda.strftime('%d/%m/%Y %H:%M')
+
+        # Crear la respuesta HTTP con el archivo Excel
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=historial_busquedas.xlsx'
+        wb.save(response)
+        return response
+
+    else:  # PDF
+        # Crear el documento PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        # Estilo para el título
+        styles = getSampleStyleSheet()
+        elements.append(Paragraph('Historial de Búsquedas', styles['Heading1']))
+        elements.append(Paragraph(f'Generado el {timezone.now().strftime("%d/%m/%Y %H:%M")}', styles['Normal']))
+
+        # Datos para la tabla
+        data = [['Usuario', 'Término de búsqueda', 'Tipo de resultado', 'Fecha y hora']]
+        for registro in queryset:
+            data.append([
+                registro.usuario.username,
+                registro.termino_busqueda,
+                registro.tipo_resultado or '--',
+                registro.fecha_busqueda.strftime('%d/%m/%Y %H:%M')
+            ])
+
+        # Crear la tabla
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 12),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table)
+
+        # Generar el PDF
+        doc.build(elements)
+        pdf = buffer.getvalue()
+        buffer.close()
+
+        # Crear la respuesta HTTP con el archivo PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=historial_busquedas.pdf'
+        response.write(pdf)
+        return response

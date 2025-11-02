@@ -1,6 +1,33 @@
 from django import forms
 from django.contrib.auth.models import User
 
+class HistorialBusquedaFilterForm(forms.Form):
+    fecha_inicio = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    fecha_fin = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    tipo_resultado = forms.ChoiceField(
+        required=False,
+        choices=[
+            ('', 'Todos'),
+            ('Sección', 'Sección'),
+            ('Capítulo', 'Capítulo'),
+            ('Partida', 'Partida'),
+            ('Subpartida', 'Subpartida'),
+            ('Sin resultado', 'Sin resultado'),
+            ('Resultados múltiples', 'Resultados múltiples'),
+        ],
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    palabra_clave = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Buscar término...'})
+    )
+
 class RegistroUsuarioForm(forms.ModelForm):
     password = forms.CharField(
         label='Contraseña',

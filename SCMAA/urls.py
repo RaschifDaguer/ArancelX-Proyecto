@@ -20,10 +20,7 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('central/', include('central.urls')),
-    # path('central/', include('django.contrib.auth.urls'))
     path('arancel/', include('arancel.urls', namespace='arancel')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('', include('central.urls')),
-    path('', RedirectView.as_view(pattern_name='arancel:tabla_aranceles', permanent=False)),
+    path('', include('central.urls', namespace='central')),
 ]

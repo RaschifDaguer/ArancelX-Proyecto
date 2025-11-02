@@ -31,6 +31,13 @@ def replace_none(value):
     return value
 
 @register.filter
+def underscore_to_space(value):
+    """Reemplaza guiones bajos por espacios"""
+    if value is None:
+        return ''
+    return str(value).replace('_', ' ')
+
+@register.filter
 def is_descriptive_code(value):
     """Devuelve True si el código NO es solo números y puntos (es decir, es un título)."""
     if not value:

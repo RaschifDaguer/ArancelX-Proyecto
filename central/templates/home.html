@@ -22,7 +22,32 @@
                 <input class="form-control me-2" type="search" id="busqueda-dashboard" name="q" placeholder="Buscar código o descripción..." aria-label="Buscar" aria-autocomplete="list" aria-expanded="false" role="combobox" aria-owns="sugerencias-dashboard" autocomplete="off" required>
                 <button class="search-btn-custom" type="submit" aria-label="Buscar"><i class="fas fa-arrow-right"></i></button>
             </form>
-            <ul id="sugerencias-dashboard" class="list-group position-absolute w-100" style="z-index: 1000;" role="listbox" aria-label="Sugerencias de búsqueda"></ul>
+            <ul id="sugerencias-dashboard" class="list-group position-absolute w-100" style="z-index: 1000; max-height: 400px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" role="listbox" aria-label="Sugerencias de búsqueda"></ul>
+            <style>
+                #sugerencias-dashboard {
+                    scrollbar-width: thin;
+                    scrollbar-color: #6c757d #f8f9fa;
+                }
+                #sugerencias-dashboard::-webkit-scrollbar {
+                    width: 8px;
+                }
+                #sugerencias-dashboard::-webkit-scrollbar-track {
+                    background: #f8f9fa;
+                    border-radius: 4px;
+                }
+                #sugerencias-dashboard::-webkit-scrollbar-thumb {
+                    background-color: #6c757d;
+                    border-radius: 4px;
+                }
+                #sugerencias-dashboard::-webkit-scrollbar-thumb:hover {
+                    background-color: #495057;
+                }
+                #sugerencias-dashboard .list-group-item {
+                    border-left: none;
+                    border-right: none;
+                    padding: 0.75rem 1rem;
+                }
+            </style>
         </div>
     </div>
     
@@ -78,7 +103,7 @@
             <a href="{% url 'arancel:seccion_list' %}" class="btn btn-outline-primary btn-lg mb-2">
                 <i class="fas fa-layer-group me-2"></i>Ver Secciones
             </a>
-            <a href="{% url 'admin_redirect' %}" class="btn btn-outline-dark btn-lg mb-2 ms-2">
+            <a href="{% url 'central:admin_redirect' %}" class="btn btn-outline-dark btn-lg mb-2 ms-2">
                 <i class="fas fa-user-shield me-2"></i>Administración
             </a>
         </div>
@@ -98,12 +123,12 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-2">
-                            <a href="{% url 'gestionar_usuarios' %}" class="btn btn-warning w-100">
+                            <a href="{% url 'central:gestionar_usuarios' %}" class="btn btn-warning w-100">
                                 <i class="fas fa-users me-2"></i>Gestionar Usuarios
                             </a>
                         </div>
                         <div class="col-md-6 mb-2">
-                            <a href="{% url 'gestionar_roles' %}" class="btn btn-outline-warning w-100">
+                            <a href="{% url 'central:gestionar_roles' %}" class="btn btn-outline-warning w-100">
                                 <i class="fas fa-user-tag me-2"></i>Gestionar Roles
                             </a>
                         </div>
@@ -114,68 +139,33 @@
     </div>
     {% endif %}
     
-    <!-- Historial de Búsquedas -->
-    <div class="row justify-content-center mt-5">
+    <div class="row justify-content-center mt-4">
         <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <div class="card shadow-sm border-info">
+                <div class="card-header bg-info bg-opacity-10">
                     <h5 class="mb-0">
                         <i class="fas fa-history me-2"></i>
-                        Historial de Búsquedas Recientes
+                        Historial y Exportación
                     </h5>
-                    {% if historial_busquedas %}
-                    <form method="post" action="{% url 'limpiar_historial' %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-light btn-sm" onclick="return confirm('¿Estás seguro de que quieres limpiar todo el historial?')">
-                            <i class="fas fa-trash me-1"></i> Limpiar Historial
-                        </button>
-                    </form>
-                    {% endif %}
                 </div>
                 <div class="card-body">
-                    {% if historial_busquedas %}
-                        <div class="list-group list-group-flush">
-                            {% for busqueda in historial_busquedas %}
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <span class="badge bg-primary me-2">
-                                        {% if busqueda.tipo_resultado == 'Sección' %}
-                                            <i class="fas fa-layer-group"></i>
-                                        {% elif busqueda.tipo_resultado == 'Capítulo' %}
-                                            <i class="fas fa-book"></i>
-                                        {% elif busqueda.tipo_resultado == 'Partida' %}
-                                            <i class="fas fa-list-ol"></i>
-                                        {% elif busqueda.tipo_resultado == 'Subpartida' %}
-                                            <i class="fas fa-table"></i>
-                                        {% else %}
-                                            <i class="fas fa-search"></i>
-                                        {% endif %}
-                                    </span>
-                                    <div>
-                                        <strong>{{ busqueda.termino_busqueda }}</strong>
-                                        <br>
-                                        <small class="text-muted">
-                                            {{ busqueda.tipo_resultado|replace_none }} • {{ busqueda.fecha_busqueda|date:"d/m/Y H:i" }}
-                                        </small>
-                                    </div>
-                                </div>
-                                {% if busqueda.tipo_resultado != 'Sin resultado' and busqueda.id_resultado %}
-                                    <a href="{{ busqueda.tipo_resultado|get_detail_url:busqueda.id_resultado }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye me-1"></i> Ver
-                                    </a>
-                                {% else %}
-                                    <span class="text-muted">Sin resultado</span>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="text-center text-muted py-3">
-                            <i class="fas fa-search fa-2x mb-2"></i>
-                            <p>No hay búsquedas recientes</p>
-                            <small>Realiza tu primera búsqueda para ver el historial aquí</small>
-                        </div>
-                    {% endif %}
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <a href="{% url 'central:historial_busquedas' %}" class="btn btn-info">
+                            <i class="fas fa-clock me-2"></i>Ver Historial
+                        </a>
+                        <form action="{% url 'central:limpiar_historial' %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="fas fa-trash-alt me-2"></i>Limpiar Historial
+                            </button>
+                        </form>
+                        <a href="{% url 'central:exportar_historial' %}?format=excel" class="btn btn-success">
+                            <i class="fas fa-file-excel me-2"></i>Exportar a Excel
+                        </a>
+                        <a href="{% url 'central:exportar_historial' %}?format=pdf" class="btn btn-danger">
+                            <i class="fas fa-file-pdf me-2"></i>Exportar a PDF
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -267,10 +257,15 @@ inputDashboard.addEventListener('input', function() {
                 let codigoText = item.codigo || item.nombre;
                 let descripcionText = item.descripcion || '';
                 
-                // Resaltar coincidencias en el código
-                if (codigoText.toLowerCase().includes(valor.toLowerCase())) {
+                // Resaltar coincidencias en el código y descripción
+                if (valor) {
                     const regex = new RegExp(`(${valor})`, 'gi');
-                    codigoText = codigoText.replace(regex, '<mark>$1</mark>');
+                    if (codigoText.toLowerCase().includes(valor.toLowerCase())) {
+                        codigoText = codigoText.replace(regex, '<mark>$1</mark>');
+                    }
+                    if (descripcionText.toLowerCase().includes(valor.toLowerCase())) {
+                        descripcionText = descripcionText.replace(regex, '<mark>$1</mark>');
+                    }
                 }
                 
                 let tituloExtra = '';
@@ -279,18 +274,27 @@ inputDashboard.addEventListener('input', function() {
                 }
                 
                 const highlightClass = item.es_correccion ? 'text-primary' : '';
+                
+                // Mostrar código y descripción en un formato más estructurado
                 content.innerHTML = `
                     <div class="${highlightClass}">
-                        <strong>${codigoText}</strong>
-                        ${descripcionText ? `<br><small style='color: #6c757d;'>${descripcionText}</small>` : ''}
-                        ${tituloExtra}
+                        <div class="d-flex justify-content-between align-items-start">
+                            <strong style="min-width: 120px; margin-right: 10px;">${codigoText}</strong>
+                            <div style="flex: 1;">
+                                <strong style="color: #666; font-size: 0.85em;">Descripción: </strong>
+                                <span style="color: #495057; font-size: 0.95em;">${descripcionText}</span>
+                                ${tituloExtra}
+                            </div>
+                        </div>
                     </div>
                 `;
                 li.appendChild(content);
                 
                 // Click handler
                 li.onclick = () => {
-                    window.location.href = `/arancel/buscar/?q=${encodeURIComponent(item.codigo || item.nombre)}`;
+                    // Guardar el código original (con guiones bajos) en un atributo de datos
+                    const searchValue = item.codigo ? item.codigo.replace(/ /g, '_') : (item.nombre ? item.nombre.replace(/ /g, '_') : '');
+                    window.location.href = `/arancel/buscar/?q=${encodeURIComponent(searchValue)}`;
                 };
                 
                 sugerenciasDashboard.appendChild(li);

@@ -1,7 +1,11 @@
 from django.urls import path
 from . import views
 
+app_name = 'central'
+
 urlpatterns = [
+    path('historial/', views.HistorialBusquedaListView.as_view(), name='historial_busquedas'),
+    path('historial/exportar/', views.exportar_historial, name='exportar_historial'),
     path('', views.home, name='home'),
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),

@@ -20,25 +20,6 @@
             flex-direction: column;
         }
 
-        .navbar {
-            background-color: var(--primary-color) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .navbar-brand {
-            font-weight: 600;
-            font-size: 1.5rem;
-        }
-
-        .nav-link {
-            color: rgba(255,255,255,0.9) !important;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: #fff !important;
-        }
-
         .main-content {
             flex: 1;
             padding: 2rem 0;
@@ -64,13 +45,6 @@
             border-color: #2980b9;
         }
 
-        .footer {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1rem 0;
-            margin-top: auto;
-        }
-
         .search-btn-custom {
             background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
             color: #fff;
@@ -91,14 +65,7 @@
             color: #fff;
             box-shadow: 0 4px 12px rgba(52,152,219,0.25);
         }
-        .navbar .form-control {
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        .navbar .search-btn-custom {
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
+
         .search-btn-custom i {
             font-size: 1.5rem;
             color: #fff;
@@ -107,11 +74,7 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <!-- Eliminado el logo y texto del sistema de aranceles -->
-        </div>
-    </nav>
+
 
     {% if messages %}
     <div class="container mt-3">
@@ -130,12 +93,6 @@
             {% endblock %}
         </div>
     </div>
-
-    <footer class="footer">
-        <div class="container text-center">
-            <p class="mb-0">&copy; {% now "Y" %} Sistema de Aranceles. Todos los derechos reservados.</p>
-        </div>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}

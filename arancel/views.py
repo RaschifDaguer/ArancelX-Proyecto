@@ -12,6 +12,16 @@ from django.views.decorators.http import require_GET
 from central.models import HistorialBusqueda
 from arancel.templatetags.custom_filters import is_descriptive_code
 
+
+# Utilidad interna: limpiar guiones bajos para respuestas JSON (sugerencias)
+def _clean_text_for_json(value):
+    if value is None:
+        return ''
+    try:
+        return str(value).replace('_', ' ')
+    except Exception:
+        return str(value)
+
 @method_decorator(login_required, name='dispatch')
 class SeccionListView(ListView):
     model = Seccion
@@ -105,15 +115,15 @@ def search_predictive(request):
     for partida in partidas.union(partidas_descripcion):
         results.append({
             'type': 'partida',
-            'codigo': partida.codigo,
-            'descripcion': partida.descripcion,
+            'codigo': _clean_text_for_json(partida.codigo),
+            'descripcion': _clean_text_for_json(partida.descripcion),
         })
 
     for subpartida in subpartidas.union(subpartidas_descripcion):
         results.append({
             'type': 'subpartida',
-            'codigo': subpartida.codigo,
-            'descripcion': subpartida.descripcion,
+            'codigo': _clean_text_for_json(subpartida.codigo),
+            'descripcion': _clean_text_for_json(subpartida.descripcion),
         })
 
     return JsonResponse(results, safe=False)
@@ -303,8 +313,8 @@ def autocomplete_arancel(request):
             resultados_con_puntaje.append({
                 'tipo': 'Sección',
                 'id': s.id,
-                'nombre': s.nombre,
-                'descripcion': s.descripcion or '',
+                'nombre': _clean_text_for_json(s.nombre),
+                'descripcion': _clean_text_for_json(s.descripcion or ''),
                 'puntaje': 1.0,
                 'es_correccion': query != s.nombre
             })
@@ -313,9 +323,9 @@ def autocomplete_arancel(request):
             resultados_con_puntaje.append({
                 'tipo': 'Capítulo',
                 'id': c.id,
-                'codigo': c.codigo,
-                'nombre': c.nombre,
-                'descripcion': c.descripcion or '',
+                'codigo': _clean_text_for_json(c.codigo),
+                'nombre': _clean_text_for_json(c.nombre),
+                'descripcion': _clean_text_for_json(c.descripcion or ''),
                 'puntaje': 0.95,
                 'es_correccion': query != c.codigo
             })
@@ -324,8 +334,8 @@ def autocomplete_arancel(request):
             resultados_con_puntaje.append({
                 'tipo': 'Partida',
                 'id': p.id,
-                'codigo': p.codigo,
-                'descripcion': p.descripcion,
+                'codigo': _clean_text_for_json(p.codigo),
+                'descripcion': _clean_text_for_json(p.descripcion),
                 'puntaje': 0.9 if es_codigo else 0.85,
                 'es_correccion': query != p.codigo
             })
@@ -340,9 +350,9 @@ def autocomplete_arancel(request):
             resultados_con_puntaje.append({
                 'tipo': 'Subpartida',
                 'id': s.id,
-                'codigo': s.codigo,
-                'descripcion': s.descripcion,
-                'titulo_desc': titulo_desc,
+                'codigo': _clean_text_for_json(s.codigo),
+                'descripcion': _clean_text_for_json(s.descripcion),
+                'titulo_desc': _clean_text_for_json(titulo_desc),
                 'puntaje': 0.9 if es_codigo else 0.85,
                 'es_correccion': query != s.codigo
             })
@@ -354,8 +364,8 @@ def autocomplete_arancel(request):
                 resultados_con_puntaje.append({
                     'tipo': 'Sección',
                     'id': s.id,
-                    'nombre': s.nombre,
-                    'descripcion': s.descripcion or '',
+                    'nombre': _clean_text_for_json(s.nombre),
+                    'descripcion': _clean_text_for_json(s.descripcion or ''),
                     'puntaje': puntaje,
                     'es_correccion': False
                 })
@@ -366,9 +376,9 @@ def autocomplete_arancel(request):
                 resultados_con_puntaje.append({
                     'tipo': 'Capítulo',
                     'id': c.id,
-                    'codigo': c.codigo,
-                    'nombre': c.nombre,
-                    'descripcion': c.descripcion or '',
+                    'codigo': _clean_text_for_json(c.codigo),
+                    'nombre': _clean_text_for_json(c.nombre),
+                    'descripcion': _clean_text_for_json(c.descripcion or ''),
                     'puntaje': puntaje,
                     'es_correccion': False
                 })
@@ -379,8 +389,8 @@ def autocomplete_arancel(request):
                 resultados_con_puntaje.append({
                     'tipo': 'Partida',
                     'id': p.id,
-                    'codigo': p.codigo,
-                    'descripcion': p.descripcion,
+                    'codigo': _clean_text_for_json(p.codigo),
+                    'descripcion': _clean_text_for_json(p.descripcion),
                     'puntaje': puntaje,
                     'es_correccion': False
                 })
@@ -397,9 +407,9 @@ def autocomplete_arancel(request):
                 resultados_con_puntaje.append({
                     'tipo': 'Subpartida',
                     'id': s.id,
-                    'codigo': s.codigo,
-                    'descripcion': s.descripcion,
-                    'titulo_desc': titulo_desc,
+                    'codigo': _clean_text_for_json(s.codigo),
+                    'descripcion': _clean_text_for_json(s.descripcion),
+                    'titulo_desc': _clean_text_for_json(titulo_desc),
                     'puntaje': puntaje,
                     'es_correccion': False
                 })
@@ -431,8 +441,8 @@ def autocomplete_arancel(request):
                                     resultados_con_puntaje.append({
                                         'tipo': 'Partida',
                                         'id': item.id,
-                                        'codigo': item.codigo,
-                                        'descripcion': item.descripcion,
+                                        'codigo': _clean_text_for_json(item.codigo),
+                                        'descripcion': _clean_text_for_json(item.descripcion),
                                         'puntaje': 0.65,
                                         'es_correccion': True
                                     })
@@ -447,9 +457,9 @@ def autocomplete_arancel(request):
                                     resultados_con_puntaje.append({
                                         'tipo': 'Subpartida',
                                         'id': item.id,
-                                        'codigo': item.codigo,
-                                        'descripcion': item.descripcion,
-                                        'titulo_desc': titulo_desc,
+                                        'codigo': _clean_text_for_json(item.codigo),
+                                        'descripcion': _clean_text_for_json(item.descripcion),
+                                        'titulo_desc': _clean_text_for_json(titulo_desc),
                                         'puntaje': 0.65,
                                         'es_correccion': True
                                     })
@@ -458,9 +468,9 @@ def autocomplete_arancel(request):
                                     resultados_con_puntaje.append({
                                         'tipo': 'Capítulo',
                                         'id': item.id,
-                                        'codigo': item.codigo,
-                                        'nombre': item.nombre,
-                                        'descripcion': item.descripcion or '',
+                                        'codigo': _clean_text_for_json(item.codigo),
+                                        'nombre': _clean_text_for_json(item.nombre),
+                                        'descripcion': _clean_text_for_json(item.descripcion or ''),
                                         'puntaje': 0.65,
                                         'es_correccion': True
                                     })
@@ -511,8 +521,8 @@ def autocomplete_arancel(request):
                         resultados_con_puntaje.append({
                             'tipo': 'Partida',
                             'id': item.id,
-                            'codigo': item.codigo,
-                            'descripcion': item.descripcion,
+                            'codigo': _clean_text_for_json(item.codigo),
+                            'descripcion': _clean_text_for_json(item.descripcion),
                             'puntaje': similitud * 0.8,
                             'es_correccion': True
                         })
@@ -526,9 +536,9 @@ def autocomplete_arancel(request):
                         resultados_con_puntaje.append({
                             'tipo': 'Subpartida',
                             'id': item.id,
-                            'codigo': item.codigo,
-                            'descripcion': item.descripcion,
-                            'titulo_desc': titulo_desc,
+                            'codigo': _clean_text_for_json(item.codigo),
+                            'descripcion': _clean_text_for_json(item.descripcion),
+                            'titulo_desc': _clean_text_for_json(titulo_desc),
                             'puntaje': similitud * 0.8,
                             'es_correccion': True
                         })
@@ -536,9 +546,9 @@ def autocomplete_arancel(request):
                         resultados_con_puntaje.append({
                             'tipo': 'Capítulo',
                             'id': item.id,
-                            'codigo': item.codigo,
-                            'nombre': item.nombre,
-                            'descripcion': item.descripcion or '',
+                            'codigo': _clean_text_for_json(item.codigo),
+                            'nombre': _clean_text_for_json(item.nombre),
+                            'descripcion': _clean_text_for_json(item.descripcion or ''),
                             'puntaje': similitud * 0.8,
                             'es_correccion': True
                         })
@@ -546,8 +556,8 @@ def autocomplete_arancel(request):
                         resultados_con_puntaje.append({
                             'tipo': 'Sección',
                             'id': item.id,
-                            'nombre': item.nombre,
-                            'descripcion': item.descripcion or '',
+                            'nombre': _clean_text_for_json(item.nombre),
+                            'descripcion': _clean_text_for_json(item.descripcion or ''),
                             'puntaje': similitud * 0.8,
                             'es_correccion': True
                         })

@@ -3,49 +3,101 @@
 
 {% block content %}
 <div class="mb-3">
-    <a href="{% url 'home' %}" class="btn btn-outline-primary">
+    <a href="{% url 'central:home' %}" class="btn btn-outline-primary">
         <i class="fas fa-arrow-left me-2"></i>Volver al inicio
     </a>
 </div>
 <div class="container">
-    <h3 class="mb-4">Resultados de búsqueda para: <strong>"{{ query }}"</strong></h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">Resultados de búsqueda para: <strong>"{{ query }}"</strong></h3>
+        <div class="text-end">
+            <span class="badge bg-secondary">
+                {{ subpartidas|length|add:partidas|length }} resultados encontrados
+            </span>
+        </div>
+    </div>
     {% if subpartidas or partidas %}
         {% if subpartidas %}
-        <h5>Subpartidas encontradas:</h5>
-        <ul class="list-group mb-4">
-            {% for subpartida in subpartidas %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="badge bg-info me-2"><i class="fas fa-table me-1"></i>Subpartida</span>
-                        <strong>{{ subpartida.codigo|replace_none }}</strong> - {{ subpartida.descripcion|replace_none|truncatechars:60 }}
-                        <br>
-                        <small class="text-muted">Partida: <strong>{{ subpartida.partida.codigo }}</strong> - {{ subpartida.partida.descripcion|replace_none }}</small>
-                    </div>
-                    {% if subpartida.codigo|is_descriptive_code %}
-                        <a href="{% url 'arancel:partida_detail' subpartida.partida.id %}?highlight={{ subpartida.id }}" class="btn btn-outline-primary btn-sm">Ver en lista</a>
-                    {% else %}
-                        <a href="{% url 'arancel:subpartida_detail' subpartida.id %}" class="btn btn-outline-primary btn-sm">Ver detalle</a>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
+        <div class="card mb-4">
+            <div class="card-header bg-info bg-opacity-10">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>Subpartidas encontradas ({{ subpartidas|length }})
+                </h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for subpartida in subpartidas %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-info me-2"><i class="fas fa-table me-1"></i>Subpartida</span>
+                                    <h6 class="mb-0">
+                                        <strong>{{ subpartida.codigo|replace_none }}</strong>
+                                    </h6>
+                                </div>
+                                <p class="mb-1 mt-2">{{ subpartida.descripcion|replace_none }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-folder me-1"></i>Partida: 
+                                    <strong>{{ subpartida.partida.codigo }}</strong> - 
+                                    {{ subpartida.partida.descripcion|replace_none }}
+                                </small>
+                            </div>
+                            <div class="ms-3">
+                                {% if subpartida.codigo|is_descriptive_code %}
+                                    <a href="{% url 'arancel:partida_detail' subpartida.partida.id %}?highlight={{ subpartida.id }}" 
+                                       class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-list me-1"></i>Ver en lista
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'arancel:subpartida_detail' subpartida.id %}" 
+                                       class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-search me-1"></i>Ver detalle
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
         {% endif %}
         {% if partidas %}
-        <h5>Partidas encontradas:</h5>
-        <ul class="list-group mb-4">
-            {% for partida in partidas %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="badge bg-warning me-2"><i class="fas fa-list-ol me-1"></i>Partida</span>
-                        <strong>{{ partida.codigo }}</strong> - {{ partida.descripcion|replace_none|truncatechars:60 }}
-                    </div>
-                    <a href="{% url 'arancel:partida_detail' partida.id %}" class="btn btn-outline-primary btn-sm">Ver detalle</a>
-                </li>
-            {% endfor %}
-        </ul>
+        <div class="card mb-4">
+            <div class="card-header bg-warning bg-opacity-10">
+                <h5 class="mb-0">
+                    <i class="fas fa-list-ol me-2"></i>Partidas encontradas ({{ partidas|length }})
+                </h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for partida in partidas %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-warning me-2"><i class="fas fa-list-ol me-1"></i>Partida</span>
+                                    <h6 class="mb-0">
+                                        <strong>{{ partida.codigo }}</strong>
+                                    </h6>
+                                </div>
+                                <p class="mb-1 mt-2">{{ partida.descripcion|replace_none }}</p>
+                            </div>
+                            <div class="ms-3">
+                                <a href="{% url 'arancel:partida_detail' partida.id %}" 
+                                   class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-search me-1"></i>Ver detalle
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
         {% endif %}
     {% else %}
-        <div class="alert alert-warning">No se encontraron resultados para tu búsqueda.</div>
+        <div class="alert alert-warning d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <div>No se encontraron resultados para tu búsqueda.</div>
+        </div>
     {% endif %}
 </div>
-{% endblock %} 
+{% endblock %}

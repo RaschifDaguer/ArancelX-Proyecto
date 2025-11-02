@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="mb-3">
-    <a href="{% url 'home' %}" class="btn btn-outline-primary">
+    <a href="{% url 'central:home' %}" class="btn btn-outline-primary">
         <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
     </a>
 </div>
@@ -143,14 +143,14 @@
                                             {% else %}
                                                 <tr id="subpartida-{{ subpartida.id }}">
                                                     <td><strong>{{ subpartida.codigo|replace_none }}</strong></td>
-                                                    <td>{{ subpartida.descripcion|replace_none }}</td>
+                                                    <td>{{ subpartida.descripcion|replace_none|underscore_to_space }}</td>
                                                     <td>{{ subpartida.ga|replace_none }}</td>
-                                                    <td>{{ subpartida.ice_iehd|replace_none }}</td>
-                                                    <td>{{ subpartida.unidad_medida|replace_none }}</td>
-                                                    <td>{{ subpartida.despacho_en_frontera|replace_none }}</td>
-                                                    <td>{{ subpartida.tipo_de_doc|replace_none }}</td>
-                                                    <td>{{ subpartida.entidad_que_emite|replace_none }}</td>
-                                                    <td>{{ subpartida.disposicion_legal|replace_none }}</td>
+                                                    <td>{{ subpartida.ice_iehd|replace_none|underscore_to_space }}</td>
+                                                    <td>{{ subpartida.unidad_medida|replace_none|underscore_to_space }}</td>
+                                                    <td>{{ subpartida.despacho_en_frontera|replace_none|underscore_to_space }}</td>
+                                                    <td>{{ subpartida.tipo_de_doc|replace_none|underscore_to_space }}</td>
+                                                    <td>{{ subpartida.entidad_que_emite|replace_none|underscore_to_space }}</td>
+                                                    <td>{{ subpartida.disposicion_legal|replace_none|underscore_to_space }}</td>
                                                     <td>{{ subpartida.can_ace_36_47_ven|replace_none }}</td>
                                                     <td>{{ subpartida.ace_22_chile|replace_none }}</td>
                                                     <td>{{ subpartida.ace_22_prot|replace_none }}</td>
@@ -274,11 +274,16 @@
                     // Crear contenido del texto
                     const content = document.createElement('div');
                     content.className = 'flex-grow-1';
-                    content.innerHTML = `<strong>${item.codigo || item.nombre}</strong> - ${item.descripcion || ''}`;
+                    // Limpiar y formatear el texto (remover símbolos especiales y formatear)
+                    const nombre = (item.codigo || item.nombre || '').replace(/_/g, ' ').replace(/[^\w\s]/g, ' ').trim();
+                    const descripcion = (item.descripcion || '').replace(/_/g, ' ').replace(/[^\w\s]/g, ' ').trim();
+                    // Solo mostrar la descripción sin guiones o símbolos
+                    content.innerHTML = `${descripcion}`;
                     li.appendChild(content);
                     
                     li.onclick = () => {
-                        inputBusqueda.value = item.codigo || item.nombre;
+                        // Usar el valor con espacios en lugar de guiones bajos
+                        inputBusqueda.value = (item.codigo || item.nombre || '').replace(/_/g, ' ');
                         sugerencias.innerHTML = '';
                         sugerencias.style.display = 'none';
                         inputBusqueda.focus();
